@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>132政通路 · 收租管理</title>
+<style>
+  :root {
+    --bg: #f5f6fa;
+    --white: #ffffff;
+    --border: #e2e6ef;
+    --text: #1a1d2e;
+    --text-dim: #7a8099;
+    --text-mid: #4a5068;
+    --accent: #3b6ef5;
+    --green: #18a058;
+    --green-bg: #e8f7ef;
+    --red: #d03050;
+    --red-bg: #fdeef0;
+    --orange: #e07800;
+    --orange-bg: #fff4e0;
+    --yellow: #b08000;
+    --yellow-bg: #fffbe0;
+    --sans: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    background: var(--accent);
+    color: #fff;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(59,110,245,0.15);
+  }
+  .logo { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .header-sub { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+  .btn-primary {
+    background: #fff; color: var(--accent); border: none;
+    border-radius: 6px; padding: 8px 16px;
+    font-family: var(--sans); font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+
+  /* ALERT BAR */
+  .alert-bar {
+    background: var(--red-bg);
+    border-bottom: 2px solid #f5c0c8;
+    padding: 10px 24px;
+    display: none;
+  }
+  .alert-bar.show { display: block; }
+  .alert-title { font-weight: 700; color: var(--red); font-size: 13px; margin-bottom: 6px; }
+  .alert-item { font-size: 13px; color: var(--red); padding: 2px 0; }
+
+  /* SUMMARY */
+  .summary-row {
+    display: flex; gap: 12px; padding: 16px 24px;
+    overflow-x: auto;
+  }
+  .summary-card {
+    background: var(--white); border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 14px 20px; min-width: 140px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    flex-shrink: 0;
+  }
+  .summary-num { font-size: 26px; font-weight: 700; line-height: 1; }
+  .summary-label { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+  /* THIS MONTH */
+  .section { padding: 0 24px 20px; }
+  .section-title {
+    font-size: 13px; font-weight: 700; color: var(--text-mid);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .month-cards { display: flex; flex-direction: column; gap: 8px; }
+  .month-card {
+    background: var(--white); border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: box-shadow 0.15s;
+  }
+  .month-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.09); }
+  .month-card.urgent { border-left: 4px solid var(--red); }
+  .month-card.warning { border-left: 4px solid var(--orange); }
+  .month-card.soon { border-left: 4px solid #e6c100; }
+  .month-card.paid { border-left: 4px solid var(--green); opacity: 0.7; }
+
+  .card-icon { font-size: 22px; flex-shrink: 0; }
+  .card-body { flex: 1; }
+  .card-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .card-name { font-weight: 700; font-size: 14px; }
+  .card-unit { font-size: 12px; color: var(--text-dim); background: var(--bg); border-radius: 4px; padding: 1px 6px; }
+  .card-due { font-size: 13px; margin-top: 4px; color: var(--text-mid); }
+  .card-amount { font-size: 16px; font-weight: 700; color: var(--accent); text-align: right; white-space: nowrap; }
+  .card-amount .label { font-size: 11px; color: var(--text-dim); font-weight: 400; }
+  .days-badge {
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+    white-space: nowrap;
+  }
+  .days-urgent { background: var(--red-bg); color: var(--red); }
+  .days-warning { background: var(--orange-bg); color: var(--orange); }
+  .days-soon { background: var(--yellow-bg); color: var(--yellow); }
+  .days-ok { background: #eef2ff; color: var(--accent); }
+  .days-paid { background: var(--green-bg); color: var(--green); }
+  .days-past { background: #f3e8ff; color: #7c3aed; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; margin: 0 24px 24px; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  table { width: 100%; border-collapse: collapse; background: var(--white); min-width: 700px; }
+  th { background: #f8f9fc; padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 12px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f8f9ff; }
+  tr { cursor: pointer; }
+
+  .tenant-name { font-weight: 700; }
+  .tenant-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .unit-badge { display: inline-block; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 7px; font-size: 12px; font-weight: 600; }
+
+  /* MODAL */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--white); border-radius: 14px; width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .modal-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .modal-header h2 { font-size: 16px; font-weight: 700; }
+  .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-dim); padding: 2px 6px; border-radius: 4px; }
+  .modal-close:hover { background: var(--bg); }
+  .modal-body { padding: 18px 20px; }
+  .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1/-1; }
+  .form-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); }
+  .form-input, .form-select { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-family: var(--sans); font-size: 13px; outline: none; width: 100%; }
+  .form-input:focus, .form-select:focus { border-color: var(--accent); background: #fff; }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--accent); margin: 14px 0 8px; }
+
+  /* HISTORY */
+  .history-list { display: flex; flex-direction: column; gap: 6px; }
+  .history-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--bg); border-radius: 6px; border: 1px solid var(--border); }
+  .history-period { flex: 1; font-size: 13px; }
+  .history-amount { font-weight: 700; font-size: 13px; color: var(--accent); }
+  .history-status { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .st-paid { background: var(--green-bg); color: var(--green); }
+  .st-unpaid { background: var(--red-bg); color: var(--red); }
+  .st-upcoming { background: #eef2ff; color: var(--accent); }
+
+  .btn-secondary { background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 8px 14px; font-family: var(--sans); font-size: 13px; cursor: pointer; }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: var(--red-bg); border: 1px solid #f5c0c8; color: var(--red); border-radius: 6px; padding: 8px 14px; font-family: var(--sans); font-size: 13px; cursor: pointer; }
+
+  .detail-row { display: flex; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label { font-size: 11px; color: var(--text-dim); width: 90px; flex-shrink: 0; padding-top: 2px; text-transform: uppercase; }
+  .detail-val { font-size: 13px; color: var(--text); flex: 1; }
+
+  /* NEXT PERIOD BOX */
+  .next-box { background: #eef2ff; border: 1px solid #c7d7ff; border-radius: 8px; padding: 12px 14px; margin-top: 10px; }
+  .next-box-title { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .next-box-content { font-size: 14px; font-weight: 700; color: var(--text); }
+  .next-box-sub { font-size: 12px; color: var(--text-mid); margin-top: 3px; }
+
+  /* NOTIFY BUTTON */
+  .btn-notify { background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-family: var(--sans); font-size: 13px; cursor: pointer; }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: #1a1d2e; color: #fff; border-radius: 8px; padding: 12px 18px; font-size: 13px; z-index: 300; transform: translateY(60px); opacity: 0; transition: all 0.2s; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .empty { text-align: center; padding: 40px; color: var(--text-dim); }
+
+  @media (max-width: 600px) {
+    header { padding: 12px 16px; }
+    .summary-row { padding: 12px 16px; }
+    .section { padding: 0 16px 16px; }
+    .table-wrap { margin: 0 16px 16px; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">🏢 132政通路 · 收租管理</div>
+    <div class="header-sub" id="todayLabel"></div>
+  </div>
+  <button class="btn-primary" onclick="openAdd()">＋ 新增租户</button>
+</header>
+
+<!-- ALERT BAR -->
+<div class="alert-bar" id="alertBar">
+  <div class="alert-title">⚠ 以下租户需要在3天内通知交租：</div>
+  <div id="alertList"></div>
+</div>
+
+<!-- SUMMARY -->
+<div class="summary-row">
+  <div class="summary-card">
+    <div class="summary-num" id="s-total">0</div>
+    <div class="summary-label">租户总数</div>
+  </div>
+  <div class="summary-card" style="border-left:3px solid var(--red)">
+    <div class="summary-num" style="color:var(--red)" id="s-urgent">0</div>
+    <div class="summary-label">需立即通知</div>
+  </div>
+  <div class="summary-card" style="border-left:3px solid var(--orange)">
+    <div class="summary-num" style="color:var(--orange)" id="s-warning">0</div>
+    <div class="summary-label">本周到期</div>
+  </div>
+  <div class="summary-card" style="border-left:3px solid var(--green)">
+    <div class="summary-num" style="color:var(--green)" id="s-ok">0</div>
+    <div class="summary-label">暂无问题</div>
+  </div>
+</div>
+
+<!-- THIS MONTH DUE -->
+<div class="section">
+  <div class="section-title">📋 本月需收租（按交租日排序）</div>
+  <div class="month-cards" id="monthCards">
+    <div class="empty">暂无本月到期记录</div>
+  </div>
+</div>
+
+<!-- ALL TENANTS TABLE -->
+<div class="section">
+  <div class="section-title">🏪 全部租户</div>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>铺位</th>
+        <th>商户</th>
+        <th>付款方式</th>
+        <th>月租金</th>
+        <th>下次交租日</th>
+        <th>提前通知天数</th>
+        <th>状态</th>
+      </tr>
+    </thead>
+    <tbody id="tenantTable"></tbody>
+  </table>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="overlay" id="formModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="formTitle">新增租户</h2>
+      <button class="modal-close" onclick="closeModal('formModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">铺位号 *</label>
+          <input class="form-input" id="f-unit" placeholder="如 132-101">
+        </div>
+        <div class="form-group">
+          <label class="form-label">店名 *</label>
+          <input class="form-input" id="f-shopName" placeholder="店名">
+        </div>
+        <div class="form-group">
+          <label class="form-label">经营者</label>
+          <input class="form-input" id="f-owner" placeholder="姓名">
+        </div>
+        <div class="form-group">
+          <label class="form-label">联系电话</label>
+          <input class="form-input" id="f-phone" placeholder="手机号">
+        </div>
+        <div class="form-group">
+          <label class="form-label">合同开始日</label>
+          <input class="form-input" id="f-contractStart" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">合同结束日</label>
+          <input class="form-input" id="f-contractEnd" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">起租日</label>
+          <input class="form-input" id="f-rentStart" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">月租金（元）</label>
+          <input class="form-input" id="f-monthlyRent" type="number" placeholder="36000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">付款方式</label>
+          <select class="form-select" id="f-paymentType">
+            <option value="付三押三">付三押三（季付）</option>
+            <option value="付六押三">付六押三（半年付）</option>
+            <option value="付十二押三">付十二押三（年付）</option>
+            <option value="月付">月付</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">提前通知天数</label>
+          <input class="form-input" id="f-notifyDays" type="number" placeholder="15" value="15">
+        </div>
+        <div class="form-group">
+          <label class="form-label">押金（元）</label>
+          <input class="form-input" id="f-deposit" type="number" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">证照保证金（元）</label>
+          <input class="form-input" id="f-licenseDeposit" type="number" placeholder="0">
+        </div>
+      </div>
+      <div class="section-label">📅 下一个交租周期</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">下次交租开始日</label>
+          <input class="form-input" id="f-nextStart" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">下次交租结束日</label>
+          <input class="form-input" id="f-nextEnd" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">本期应交金额（元）</label>
+          <input class="form-input" id="f-nextAmount" type="number" placeholder="自动计算">
+        </div>
+        <div class="form-group">
+          <label class="form-label">交租状态</label>
+          <select class="form-select" id="f-nextStatus">
+            <option value="未交">未交</option>
+            <option value="已付">已付</option>
+          </select>
+        </div>
+      </div>
+      <div class="section-label">📝 备注</div>
+      <textarea class="form-input" id="f-notes" rows="3" placeholder="递增规则、特殊说明等…" style="resize:vertical"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('formModal')">取消</button>
+      <button class="btn-primary" onclick="saveTenant()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="detailTitle">租户详情</h2>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer">
+      <button class="btn-danger" id="d-delete">删除</button>
+      <button class="btn-secondary" onclick="closeModal('detailModal')">关闭</button>
+      <button class="btn-notify" id="d-notify">📱 复制通知短信</button>
+      <button class="btn-primary" id="d-edit">编辑</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'rent_tracker_v1';
+let tenants = [];
+let editingId = null;
+
+// ── STORAGE ──
+function load() {
+  try { tenants = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { tenants = []; }
+  if (!tenants.length) { tenants = defaultData(); save(); }
+}
+function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tenants)); } catch(e){} }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
+function defaultData() {
+  return [
+    {
+      id: uid(), unit: '132-101', shopName: '张忙忙零食', owner: '汪娟', phone: '',
+      contractStart: '2024-08-08', contractEnd: '2029-07-31', rentStart: '2024-11-15',
+      monthlyRent: 80000, paymentType: '付三押三', notifyDays: 15,
+      deposit: 240000, licenseDeposit: 10000,
+      nextStart: '2026-05-15', nextEnd: '2026-08-14', nextAmount: 240000, nextStatus: '已付',
+      notes: '2024.11.15-2026.11.14租金80000元，2026.11.15-2028.11.14租金84000元，2028.11.15-2029.7.31租金88200元'
+    },
+    {
+      id: uid(), unit: '132-105', shopName: '大王锅贴', owner: '赵勇', phone: '',
+      contractStart: '2024-06-18', contractEnd: '2029-06-17', rentStart: '2024-10-04',
+      monthlyRent: 36000, paymentType: '付三押三', notifyDays: 30,
+      deposit: 108000, licenseDeposit: 0,
+      nextStart: '2026-04-04', nextEnd: '2026-07-03', nextAmount: 111240, nextStatus: '已付',
+      notes: '2024.10.4-2025.10.3租金36000元，2025.10.4-2027.10.3租金37080元，2027.10.4-2029.6.17租金38192元'
+    }
+  ];
+}
+
+// ── DATE UTILS ──
+function today() { const d = new Date(); d.setHours(0,0,0,0); return d; }
+function parseDate(s) { if (!s) return null; const d = new Date(s); d.setHours(0,0,0,0); return d; }
+function fmtDate(s) {
+  if (!s) return '—';
+  const d = parseDate(s);
+  return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+}
+function daysDiff(dateStr) {
+  if (!dateStr) return null;
+  return Math.round((parseDate(dateStr) - today()) / 86400000);
+}
+
+// 计算交租截止日（提前通知天数之前）
+function notifyDate(tenant) {
+  if (!tenant.nextStart) return null;
+  const d = parseDate(tenant.nextStart);
+  d.setDate(d.getDate() - (tenant.notifyDays || 15));
+  return d.toISOString().slice(0,10);
+}
+
+function daysToNotify(tenant) {
+  return daysDiff(notifyDate(tenant));
+}
+
+// 计算下一个周期
+function calcNextPeriod(tenant) {
+  if (!tenant.nextStart || !tenant.nextEnd) return null;
+  const months = payMonths(tenant.paymentType);
+  const start = parseDate(tenant.nextEnd);
+  start.setDate(start.getDate() + 1);
+  const end = new Date(start);
+  end.setMonth(end.getMonth() + months);
+  end.setDate(end.getDate() - 1);
+  return {
+    start: start.toISOString().slice(0,10),
+    end: end.toISOString().slice(0,10),
+    amount: tenant.nextAmount // keep same amount as estimate
+  };
+}
+
+function payMonths(type) {
+  if (type === '月付') return 1;
+  if (type === '付六押三') return 6;
+  if (type === '付十二押三') return 12;
+  return 3; // 付三押三 default
+}
+
+function urgencyClass(days) {
+  if (days === null) return 'ok';
+  if (days < 0) return 'past';
+  if (days <= 3) return 'urgent';
+  if (days <= 7) return 'warning';
+  if (days <= 14) return 'soon';
+  return 'ok';
+}
+
+function daysBadge(days, paid) {
+  if (paid === '已付') return `<span class="days-badge days-paid">✓ 已付</span>`;
+  if (days === null) return '';
+  if (days < 0) return `<span class="days-badge days-past">已逾期${Math.abs(days)}天</span>`;
+  if (days === 0) return `<span class="days-badge days-urgent">今天需通知</span>`;
+  if (days <= 3) return `<span class="days-badge days-urgent">还剩${days}天通知</span>`;
+  if (days <= 7) return `<span class="days-badge days-warning">还剩${days}天通知</span>`;
+  if (days <= 14) return `<span class="days-badge days-soon">还剩${days}天通知</span>`;
+  return `<span class="days-badge days-ok">${days}天后通知</span>`;
+}
+
+// ── RENDER ──
+function render() {
+  renderAlerts();
+  renderSummary();
+  renderMonthCards();
+  renderTable();
+}
+
+function renderAlerts() {
+  const bar = document.getElementById('alertBar');
+  const list = document.getElementById('alertList');
+  const urgent = tenants.filter(t => {
+    if (t.nextStatus === '已付') return false;
+    const d = daysToNotify(t);
+    return d !== null && d <= 3 && d >= 0;
+  });
+  if (urgent.length) {
+    bar.classList.add('show');
+    list.innerHTML = urgent.map(t =>
+      `<div class="alert-item">• ${t.unit} ${t.shopName}（${t.owner||''}）— 交租日 ${fmtDate(t.nextStart)}，应在 ${fmtDate(notifyDate(t))} 前通知</div>`
+    ).join('');
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+function renderSummary() {
+  document.getElementById('s-total').textContent = tenants.length;
+  const urgent = tenants.filter(t => { if(t.nextStatus==='已付') return false; const d=daysToNotify(t); return d!==null&&d<=3&&d>=0; }).length;
+  const warning = tenants.filter(t => { if(t.nextStatus==='已付') return false; const d=daysToNotify(t); return d!==null&&d>3&&d<=7; }).length;
+  const ok = tenants.filter(t => t.nextStatus==='已付' || (daysToNotify(t)!==null&&daysToNotify(t)>7)).length;
+  document.getElementById('s-urgent').textContent = urgent;
+  document.getElementById('s-warning').textContent = warning;
+  document.getElementById('s-ok').textContent = ok;
+}
+
+function renderMonthCards() {
+  const todayDate = today();
+  const monthStart = new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
+  const monthEnd = new Date(todayDate.getFullYear(), todayDate.getMonth()+1, 0);
+
+  // Show all with upcoming rent this month (by nextStart date)
+  const relevant = tenants.filter(t => {
+    if (!t.nextStart) return false;
+    const d = parseDate(t.nextStart);
+    return d >= monthStart && d <= monthEnd;
+  }).sort((a,b) => (a.nextStart||'') > (b.nextStart||'') ? 1 : -1);
+
+  const container = document.getElementById('monthCards');
+  if (!relevant.length) {
+    container.innerHTML = '<div class="empty">本月暂无到期交租记录</div>';
+    return;
+  }
+
+  container.innerHTML = relevant.map(t => {
+    const nd = daysToNotify(t);
+    const cls = t.nextStatus==='已付' ? 'paid' : urgencyClass(nd);
+    const icon = t.nextStatus==='已付' ? '✅' : (nd<=3&&nd>=0?'🔴':nd<=7?'🟠':nd<=14?'🟡':'🟢');
+    return `<div class="month-card ${cls}" onclick="openDetail('${t.id}')">
+      <div class="card-icon">${icon}</div>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="card-name">${t.shopName}</span>
+          <span class="card-unit">${t.unit}</span>
+          ${daysBadge(nd, t.nextStatus)}
+        </div>
+        <div class="card-due">交租周期：${fmtDate(t.nextStart)} — ${fmtDate(t.nextEnd)} &nbsp;|&nbsp; 需在 <b>${fmtDate(notifyDate(t))}</b> 前通知</div>
+      </div>
+      <div class="card-amount">
+        ¥${(t.nextAmount||0).toLocaleString()}
+        <div class="label">本期租金</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tenantTable');
+  if (!tenants.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">暂无租户，点击右上角新增</td></tr>'; return; }
+  tbody.innerHTML = tenants.map(t => {
+    const nd = daysToNotify(t);
+    return `<tr onclick="openDetail('${t.id}')">
+      <td><span class="unit-badge">${t.unit}</span></td>
+      <td>
+        <div class="tenant-name">${t.shopName}</div>
+        <div class="tenant-sub">${t.owner||''}${t.phone?' · '+t.phone:''}</div>
+      </td>
+      <td>${t.paymentType||'—'}</td>
+      <td>¥${(t.monthlyRent||0).toLocaleString()}</td>
+      <td>${fmtDate(t.nextStart)}</td>
+      <td>${t.notifyDays||15}天</td>
+      <td>${daysBadge(nd, t.nextStatus)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── DETAIL ──
+function openDetail(id) {
+  const t = tenants.find(x=>x.id===id);
+  if (!t) return;
+  document.getElementById('detailTitle').textContent = `${t.shopName} · ${t.unit}`;
+  const next = calcNextPeriod(t);
+  const nd = daysToNotify(t);
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-row"><div class="detail-label">铺位</div><div class="detail-val"><b>${t.unit}</b></div></div>
+    <div class="detail-row"><div class="detail-label">店名</div><div class="detail-val">${t.shopName}</div></div>
+    <div class="detail-row"><div class="detail-label">经营者</div><div class="detail-val">${t.owner||'—'}${t.phone?' &nbsp; 📞 '+t.phone:''}</div></div>
+    <div class="detail-row"><div class="detail-label">合同期限</div><div class="detail-val">${fmtDate(t.contractStart)} — ${fmtDate(t.contractEnd)}</div></div>
+    <div class="detail-row"><div class="detail-label">月租金</div><div class="detail-val"><b>¥${(t.monthlyRent||0).toLocaleString()}</b></div></div>
+    <div class="detail-row"><div class="detail-label">付款方式</div><div class="detail-val">${t.paymentType||'—'}</div></div>
+    <div class="detail-row"><div class="detail-label">押金</div><div class="detail-val">¥${(t.deposit||0).toLocaleString()}${t.licenseDeposit?' &nbsp;+ 证照保证金 ¥'+t.licenseDeposit.toLocaleString():''}</div></div>
+    <div class="detail-row"><div class="detail-label">提前通知</div><div class="detail-val">${t.notifyDays||15}天</div></div>
+    ${t.notes?`<div class="detail-row"><div class="detail-label">递增规则</div><div class="detail-val" style="font-size:12px;color:var(--text-mid)">${t.notes}</div></div>`:''}
+
+    <div class="section-label" style="margin-top:14px">📅 当前交租周期</div>
+    <div class="history-list">
+      <div class="history-item">
+        <div class="history-period">${fmtDate(t.nextStart)} — ${fmtDate(t.nextEnd)}</div>
+        <div class="history-amount">¥${(t.nextAmount||0).toLocaleString()}</div>
+        <div class="history-status ${t.nextStatus==='已付'?'st-paid':'st-unpaid'}">${t.nextStatus||'未交'}</div>
+      </div>
+    </div>
+
+    ${t.nextStatus!=='已付' ? `
+    <div style="margin-top:8px;padding:8px 10px;background:var(--red-bg);border-radius:6px;font-size:12px;color:var(--red)">
+      ⏰ 需在 <b>${fmtDate(notifyDate(t))}</b> 前通知 &nbsp; ${daysBadge(nd, t.nextStatus)}
+    </div>` : ''}
+
+    ${next ? `
+    <div class="next-box" style="margin-top:12px">
+      <div class="next-box-title">📦 下一个交租周期（预计）</div>
+      <div class="next-box-content">${fmtDate(next.start)} — ${fmtDate(next.end)}</div>
+      <div class="next-box-sub">预计金额：¥${(next.amount||0).toLocaleString()}（按当前租金估算，请根据递增规则确认）</div>
+    </div>` : ''}
+
+    <div style="margin-top:12px">
+      <button class="btn-primary" style="width:100%;margin-bottom:8px" onclick="markPaid('${t.id}')">
+        ${t.nextStatus==='已付' ? '↩ 标记为未付' : '✓ 标记本期已收租 → 自动更新下一期'}
+      </button>
+    </div>
+  `;
+  document.getElementById('d-edit').onclick = () => { closeModal('detailModal'); openEdit(id); };
+  document.getElementById('d-delete').onclick = () => deleteTenant(id);
+  document.getElementById('d-notify').onclick = () => copyNotify(t);
+  openModal('detailModal');
+}
+
+function markPaid(id) {
+  const t = tenants.find(x=>x.id===id);
+  if (!t) return;
+  if (t.nextStatus === '已付') {
+    t.nextStatus = '未交';
+    showToast('已标记为未付');
+  } else {
+    // advance to next period
+    const next = calcNextPeriod(t);
+    t.nextStatus = '已付';
+    // after marking paid, set up next period
+    if (next) {
+      setTimeout(() => {
+        if (confirm(`已收租！\n\n是否立即更新为下一个交租周期？\n${fmtDate(next.start)} — ${fmtDate(next.end)}\n预计金额：¥${(next.amount||0).toLocaleString()}`)) {
+          t.nextStart = next.start;
+          t.nextEnd = next.end;
+          t.nextAmount = next.amount;
+          t.nextStatus = '未交';
+          save();
+          closeModal('detailModal');
+          render();
+          showToast('已更新至下一个交租周期 ✓');
+        } else {
+          save();
+          closeModal('detailModal');
+          render();
+          showToast('已标记本期已付 ✓');
+        }
+      }, 100);
+      return;
+    }
+    showToast('已标记本期已付 ✓');
+  }
+  save();
+  closeModal('detailModal');
+  render();
+}
+
+function copyNotify(t) {
+  const msg = `【交租提醒】${t.shopName}您好，您${t.unit}铺位的租金（${fmtDate(t.nextStart)}至${fmtDate(t.nextEnd)}）共计¥${(t.nextAmount||0).toLocaleString()}元，请在${fmtDate(t.nextStart)}前完成缴纳。感谢配合！`;
+  navigator.clipboard.writeText(msg).then(() => showToast('通知短信已复制 ✓')).catch(() => {
+    prompt('请手动复制以下短信内容：', msg);
+  });
+}
+
+// ── ADD/EDIT ──
+function openAdd() {
+  editingId = null;
+  document.getElementById('formTitle').textContent = '新增租户';
+  ['unit','shopName','owner','phone','contractStart','contractEnd','rentStart','notes'].forEach(f => document.getElementById('f-'+f).value = '');
+  document.getElementById('f-monthlyRent').value = '';
+  document.getElementById('f-deposit').value = '';
+  document.getElementById('f-licenseDeposit').value = '';
+  document.getElementById('f-notifyDays').value = '15';
+  document.getElementById('f-nextStart').value = '';
+  document.getElementById('f-nextEnd').value = '';
+  document.getElementById('f-nextAmount').value = '';
+  document.getElementById('f-nextStatus').value = '未交';
+  document.getElementById('f-paymentType').value = '付三押三';
+  openModal('formModal');
+}
+
+function openEdit(id) {
+  const t = tenants.find(x=>x.id===id);
+  if (!t) return;
+  editingId = id;
+  document.getElementById('formTitle').textContent = '编辑租户';
+  document.getElementById('f-unit').value = t.unit||'';
+  document.getElementById('f-shopName').value = t.shopName||'';
+  document.getElementById('f-owner').value = t.owner||'';
+  document.getElementById('f-phone').value = t.phone||'';
+  document.getElementById('f-contractStart').value = t.contractStart||'';
+  document.getElementById('f-contractEnd').value = t.contractEnd||'';
+  document.getElementById('f-rentStart').value = t.rentStart||'';
+  document.getElementById('f-monthlyRent').value = t.monthlyRent||'';
+  document.getElementById('f-paymentType').value = t.paymentType||'付三押三';
+  document.getElementById('f-notifyDays').value = t.notifyDays||15;
+  document.getElementById('f-deposit').value = t.deposit||'';
+  document.getElementById('f-licenseDeposit').value = t.licenseDeposit||'';
+  document.getElementById('f-nextStart').value = t.nextStart||'';
+  document.getElementById('f-nextEnd').value = t.nextEnd||'';
+  document.getElementById('f-nextAmount').value = t.nextAmount||'';
+  document.getElementById('f-nextStatus').value = t.nextStatus||'未交';
+  document.getElementById('f-notes').value = t.notes||'';
+  openModal('formModal');
+}
+
+function saveTenant() {
+  const unit = document.getElementById('f-unit').value.trim();
+  const shopName = document.getElementById('f-shopName').value.trim();
+  if (!unit || !shopName) { showToast('请填写铺位号和店名', 'error'); return; }
+  const t = {
+    id: editingId || uid(),
+    unit, shopName,
+    owner: document.getElementById('f-owner').value.trim(),
+    phone: document.getElementById('f-phone').value.trim(),
+    contractStart: document.getElementById('f-contractStart').value,
+    contractEnd: document.getElementById('f-contractEnd').value,
+    rentStart: document.getElementById('f-rentStart').value,
+    monthlyRent: parseFloat(document.getElementById('f-monthlyRent').value)||0,
+    paymentType: document.getElementById('f-paymentType').value,
+    notifyDays: parseInt(document.getElementById('f-notifyDays').value)||15,
+    deposit: parseFloat(document.getElementById('f-deposit').value)||0,
+    licenseDeposit: parseFloat(document.getElementById('f-licenseDeposit').value)||0,
+    nextStart: document.getElementById('f-nextStart').value,
+    nextEnd: document.getElementById('f-nextEnd').value,
+    nextAmount: parseFloat(document.getElementById('f-nextAmount').value)||0,
+    nextStatus: document.getElementById('f-nextStatus').value,
+    notes: document.getElementById('f-notes').value.trim(),
+  };
+  if (editingId) {
+    const i = tenants.findIndex(x=>x.id===editingId);
+    tenants[i] = t;
+    showToast('已更新 ✓');
+  } else {
+    tenants.push(t);
+    showToast('已新增 ✓');
+  }
+  save(); closeModal('formModal'); render();
+}
+
+function deleteTenant(id) {
+  if (!confirm('确定删除该租户？')) return;
+  tenants = tenants.filter(x=>x.id!==id);
+  save(); closeModal('detailModal'); render();
+  showToast('已删除');
+}
+
+// ── MODAL HELPERS ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(el => el.addEventListener('click', e => { if(e.target===el) closeModal(el.id); }));
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── INIT ──
+function init() {
+  const d = new Date();
+  document.getElementById('todayLabel').textContent =
+    d.toLocaleDateString('zh-CN', {year:'numeric',month:'long',day:'numeric',weekday:'short'});
+  load(); render();
+}
+init();
+</script>
+</body>
+</html>
