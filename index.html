@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>货柜追踪系统</title>
 <style>
-  /* no external fonts */
-
   :root {
     --bg: #0f1117;
     --surface: #1a1d27;
     --surface2: #22263a;
+    --surface3: #2a2f47;
     --border: #2e3348;
     --text: #e8eaf0;
     --text-dim: #7a8099;
     --text-mid: #b0b8cc;
     --accent: #4f8ef7;
+    --accent-dim: rgba(79,142,247,0.12);
     --green: #2ecc71;
     --yellow: #f0c040;
     --orange: #f5813a;
@@ -24,472 +24,132 @@
     --orange-bg: rgba(245,129,58,0.12);
     --yellow-bg: rgba(240,192,64,0.10);
     --green-bg: rgba(46,204,113,0.10);
-    --mono: 'Courier New', 'Menlo', monospace;
+    --mono: 'Courier New', monospace;
     --sans: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; font-size: 14px; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    font-size: 14px;
-  }
-
-  /* ── HEADER ── */
   header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 28px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px; border-bottom: 1px solid var(--border);
+    background: var(--surface); position: sticky; top: 0; z-index: 100;
   }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    font-size: 16px;
-    letter-spacing: 0.02em;
-  }
-  .logo-icon {
-    width: 32px; height: 32px;
-    background: var(--accent);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+  .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .btn-primary { background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer; }
   .btn-primary:hover { opacity: 0.85; }
 
-  /* ── SUMMARY BAR ── */
-  .summary-bar {
-    display: flex;
-    gap: 1px;
-    background: var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-  .summary-item {
-    flex: 1;
-    background: var(--surface);
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
+  .summary-bar { display: flex; gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+  .summary-item { flex: 1; background: var(--surface); padding: 14px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
   .summary-item:hover { background: var(--surface2); }
   .summary-item.active { background: var(--surface2); border-bottom: 2px solid var(--accent); }
-  .summary-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .summary-count {
-    font-size: 22px;
-    font-weight: 700;
-    font-family: var(--mono);
-    line-height: 1;
-  }
-  .summary-label {
-    font-size: 11px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    line-height: 1.3;
-  }
+  .summary-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .summary-count { font-size: 22px; font-weight: 700; font-family: var(--mono); line-height: 1; }
+  .summary-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; line-height: 1.3; }
 
-  /* ── TOOLBAR ── */
-  .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 28px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-  }
-  .search-box {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 7px 12px;
-    flex: 1;
-    min-width: 180px;
-    max-width: 320px;
-  }
-  .search-box input {
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 13px;
-    width: 100%;
-  }
+  .toolbar { display: flex; align-items: center; gap: 10px; padding: 12px 28px; background: var(--surface); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .search-box { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; flex: 1; min-width: 180px; max-width: 320px; }
+  .search-box input { background: none; border: none; outline: none; color: var(--text); font-family: var(--sans); font-size: 13px; width: 100%; }
   .search-box input::placeholder { color: var(--text-dim); }
-  .filter-select {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 7px 10px;
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 13px;
-    cursor: pointer;
-    outline: none;
-  }
-  .today-badge {
-    margin-left: auto;
-    font-size: 12px;
-    color: var(--text-dim);
-    font-family: var(--mono);
-  }
+  .filter-select { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--text); font-family: var(--sans); font-size: 13px; cursor: pointer; outline: none; }
+  .today-badge { margin-left: auto; font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
 
-  /* ── TABLE ── */
-  .table-wrap {
-    padding: 20px 28px;
-    overflow-x: auto;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 960px;
-  }
-  thead tr {
-    border-bottom: 2px solid var(--border);
-  }
-  th {
-    text-align: left;
-    padding: 8px 10px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: var(--text-dim);
-    white-space: nowrap;
-    cursor: pointer;
-    user-select: none;
-  }
-  th:hover { color: var(--text-mid); }
-  th .sort-arrow { margin-left: 4px; opacity: 0.4; }
-  th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
-
-  tbody tr {
-    border-bottom: 1px solid var(--border);
-    transition: background 0.1s;
-    cursor: pointer;
-  }
+  .table-wrap { padding: 20px 28px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+  thead tr { border-bottom: 2px solid var(--border); }
+  th { text-align: left; padding: 8px 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-dim); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); cursor: pointer; }
   tbody tr:hover { background: var(--surface2); }
-  tbody tr.selected { background: rgba(79,142,247,0.08); }
-
-  td {
-    padding: 11px 10px;
-    vertical-align: middle;
-  }
-
-  .td-container { font-size: 13px; }
+  td { padding: 11px 10px; vertical-align: middle; }
   .td-main { font-weight: 500; color: var(--text); }
   .td-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-
-  /* container number */
-  .container-num {
-    font-family: var(--mono);
-    font-size: 12px;
-    font-weight: 500;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 2px 6px;
-    display: inline-block;
-  }
-
-  /* route */
-  .route {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 12px;
-    font-weight: 600;
-    font-family: var(--mono);
-  }
+  .container-num { font-family: var(--mono); font-size: 12px; font-weight: 500; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; display: inline-block; }
+  .route { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; font-family: var(--mono); }
   .route-arrow { color: var(--text-dim); font-size: 10px; }
+  .date-cell { font-family: var(--mono); font-size: 12px; padding: 3px 7px; border-radius: 4px; display: inline-block; font-weight: 500; white-space: nowrap; }
+  .date-urgent { background: var(--red-bg); color: var(--red); border: 1px solid rgba(232,69,69,0.3); }
+  .date-warning { background: var(--orange-bg); color: var(--orange); border: 1px solid rgba(245,129,58,0.3); }
+  .date-soon { background: var(--yellow-bg); color: var(--yellow); border: 1px solid rgba(240,192,64,0.3); }
+  .date-ok { background: transparent; color: var(--text-mid); }
+  .date-past { color: var(--text-dim); font-style: italic; }
+  .date-none { color: var(--text-dim); }
 
-  /* date cell */
-  .date-cell {
-    font-family: var(--mono);
-    font-size: 12px;
-    padding: 3px 7px;
-    border-radius: 4px;
-    display: inline-block;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-  .date-urgent   { background: var(--red-bg);    color: var(--red);    border: 1px solid rgba(232,69,69,0.3); }
-  .date-warning  { background: var(--orange-bg);  color: var(--orange); border: 1px solid rgba(245,129,58,0.3); }
-  .date-soon     { background: var(--yellow-bg);  color: var(--yellow); border: 1px solid rgba(240,192,64,0.3); }
-  .date-ok       { background: transparent;       color: var(--text-mid); border: 1px solid transparent; }
-  .date-past     { color: var(--text-dim); font-style: italic; }
-  .date-none     { color: var(--text-dim); }
+  /* mini progress track in table row */
+  .mini-track { display: flex; align-items: center; gap: 2px; }
+  .mini-step { width: 16px; height: 5px; border-radius: 3px; background: var(--surface2); border: 1px solid var(--border); flex-shrink: 0; }
+  .mini-step.done { background: var(--green); border-color: var(--green); }
+  .mini-step.current { background: var(--accent); border-color: var(--accent); }
 
-  /* status badges */
-  .status-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
-  .status-badge {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 20px;
-    white-space: nowrap;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .s-done   { background: var(--green-bg); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
-  .s-todo   { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
-  .s-urgent { background: var(--red-bg);   color: var(--red);   border: 1px solid rgba(232,69,69,0.3); }
-
-  /* overall progress */
-  .progress-bar-bg {
-    background: var(--surface2);
-    border-radius: 99px;
-    height: 5px;
-    width: 80px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  .progress-bar-fg {
-    height: 100%;
-    border-radius: 99px;
-    background: var(--green);
-    transition: width 0.3s;
-  }
-
-  /* action buttons */
-  .action-btn {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    color: var(--text-dim);
-    padding: 4px 9px;
-    font-size: 11px;
-    cursor: pointer;
-    font-family: var(--sans);
-    transition: all 0.15s;
-    margin-right: 4px;
-  }
+  .action-btn { background: none; border: 1px solid var(--border); border-radius: 5px; color: var(--text-dim); padding: 4px 9px; font-size: 11px; cursor: pointer; font-family: var(--sans); margin-right: 4px; }
   .action-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* empty state */
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-dim);
-  }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
   .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
   .empty-state h3 { font-size: 16px; color: var(--text-mid); margin-bottom: 6px; }
 
-  /* ── MODAL ── */
-  .modal-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
   .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    width: 100%;
-    max-width: 640px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
-  }
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--border);
-  }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 80px rgba(0,0,0,0.5); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
   .modal-header h2 { font-size: 16px; font-weight: 700; }
-  .modal-close {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    font-size: 20px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
+  .modal-close { background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 4px; }
   .modal-close:hover { background: var(--surface2); color: var(--text); }
   .modal-body { padding: 20px 24px; }
-  .modal-footer {
-    padding: 16px 24px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-  }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
 
-  /* form */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .form-group { display: flex; flex-direction: column; gap: 5px; }
   .form-group.full { grid-column: 1/-1; }
-  .form-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-dim);
-  }
-  .form-input, .form-select {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 10px;
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.15s;
-    width: 100%;
-  }
+  .form-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); }
+  .form-input, .form-select { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-family: var(--sans); font-size: 13px; outline: none; width: 100%; }
   .form-input:focus, .form-select:focus { border-color: var(--accent); }
+  .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin: 16px 0 10px; }
 
-  .section-title {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--accent);
-    margin: 16px 0 10px;
-  }
-
-  /* doc status checkboxes */
-  .doc-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .doc-check {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 7px 10px;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-size: 12px;
-    user-select: none;
-  }
+  .doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .doc-check { display: flex; align-items: center; gap: 7px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; cursor: pointer; font-size: 12px; user-select: none; }
   .doc-check input { accent-color: var(--green); cursor: pointer; }
   .doc-check.checked { border-color: rgba(46,204,113,0.4); background: var(--green-bg); }
 
-  /* legend */
-  .legend {
-    display: flex;
-    gap: 16px;
-    padding: 8px 28px 12px;
-    font-size: 11px;
-    color: var(--text-dim);
-    flex-wrap: wrap;
-  }
+  .legend { display: flex; gap: 16px; padding: 8px 28px 12px; font-size: 11px; color: var(--text-dim); flex-wrap: wrap; }
   .legend-item { display: flex; align-items: center; gap: 5px; }
   .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
 
-  /* notes */
-  .notes-textarea {
-    resize: vertical;
-    min-height: 70px;
-  }
-
-  /* toast */
-  .toast {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 18px;
-    font-size: 13px;
-    z-index: 300;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.25s;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  }
+  .toast { position: fixed; bottom: 28px; right: 28px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; font-size: 13px; z-index: 300; transform: translateY(80px); opacity: 0; transition: all 0.25s; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.success { border-left: 3px solid var(--green); }
   .toast.error { border-left: 3px solid var(--red); }
 
-  /* detail panel */
-  .detail-section { margin-bottom: 18px; }
   .detail-row { display: flex; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
   .detail-row:last-child { border-bottom: none; }
   .detail-label { font-size: 11px; color: var(--text-dim); width: 100px; flex-shrink: 0; padding-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
   .detail-val { font-size: 13px; color: var(--text); flex: 1; }
 
-  .btn-secondary {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-family: var(--sans);
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
+  .btn-secondary { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 8px 16px; font-family: var(--sans); font-size: 13px; cursor: pointer; }
   .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-danger {
-    background: var(--red-bg);
-    border: 1px solid rgba(232,69,69,0.3);
-    color: var(--red);
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-family: var(--sans);
-    font-size: 13px;
-    cursor: pointer;
-  }
+  .btn-danger { background: var(--red-bg); border: 1px solid rgba(232,69,69,0.3); color: var(--red); border-radius: 6px; padding: 8px 16px; font-family: var(--sans); font-size: 13px; cursor: pointer; }
   .btn-danger:hover { background: rgba(232,69,69,0.2); }
+  .btn-notify { background: #2e3a52; border: 1px solid var(--accent); color: var(--accent); border-radius: 6px; padding: 8px 16px; font-family: var(--sans); font-size: 13px; cursor: pointer; font-weight: 600; }
+  .btn-notify:hover { background: var(--accent); color: #fff; }
+
+  /* ── PROGRESS TIMELINE (in detail modal) ── */
+  .timeline { display: flex; align-items: flex-start; padding: 8px 0 16px; overflow-x: auto; }
+  .timeline-step { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 76px; position: relative; cursor: pointer; }
+  .timeline-line { position: absolute; top: 13px; left: -50%; width: 100%; height: 2px; background: var(--border); z-index: 0; }
+  .timeline-step:first-child .timeline-line { display: none; }
+  .timeline-line.done { background: var(--green); }
+  .timeline-dot { width: 26px; height: 26px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; z-index: 1; font-weight: 700; color: var(--text-dim); transition: all 0.15s; }
+  .timeline-step.done .timeline-dot { background: var(--green); border-color: var(--green); color: #fff; }
+  .timeline-step.current .timeline-dot { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 4px var(--accent-dim); }
+  .timeline-label { font-size: 10.5px; color: var(--text-dim); margin-top: 6px; text-align: center; line-height: 1.3; }
+  .timeline-step.done .timeline-label, .timeline-step.current .timeline-label { color: var(--text-mid); font-weight: 600; }
+
+  /* notify template picker */
+  .tpl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .tpl-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 10px 12px; text-align: left; cursor: pointer; font-size: 12.5px; color: var(--text-mid); transition: all 0.15s; }
+  .tpl-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tpl-btn .tpl-icon { margin-right: 6px; }
+  .tpl-preview { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.7; color: var(--text-mid); margin-top: 10px; white-space: pre-wrap; }
 
   @media (max-width: 600px) {
     header { padding: 12px 16px; }
@@ -498,72 +158,54 @@
     .form-grid { grid-template-columns: 1fr; }
     .doc-grid { grid-template-columns: 1fr 1fr; }
     .summary-bar { flex-wrap: wrap; }
+    .tpl-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header>
-  <div class="logo">
-    <div class="logo-icon">🚢</div>
-    <span>货柜追踪系统</span>
-  </div>
-  <div class="header-right">
-    <button class="btn-primary" onclick="openAddModal()">＋ 新增票单</button>
-  </div>
+  <div class="logo"><div class="logo-icon">🚢</div><span>货柜追踪系统</span></div>
+  <button class="btn-primary" onclick="openAddModal()">＋ 新增票单</button>
 </header>
 
-<!-- SUMMARY BAR -->
 <div class="summary-bar" id="summaryBar">
   <div class="summary-item active" onclick="filterByStatus('all', this)">
     <div class="summary-dot" style="background:#4f8ef7"></div>
-    <div>
-      <div class="summary-count" id="cnt-all">0</div>
-      <div class="summary-label">全部票单</div>
-    </div>
+    <div><div class="summary-count" id="cnt-all">0</div><div class="summary-label">全部票单</div></div>
   </div>
   <div class="summary-item" onclick="filterByStatus('urgent', this)">
     <div class="summary-dot" style="background:#e84545"></div>
-    <div>
-      <div class="summary-count" id="cnt-urgent">0</div>
-      <div class="summary-label">紧急 (≤2天)</div>
-    </div>
+    <div><div class="summary-count" id="cnt-urgent">0</div><div class="summary-label">紧急 (≤2天)</div></div>
   </div>
   <div class="summary-item" onclick="filterByStatus('warning', this)">
     <div class="summary-dot" style="background:#f5813a"></div>
-    <div>
-      <div class="summary-count" id="cnt-warning">0</div>
-      <div class="summary-label">即将到期 (3-5天)</div>
-    </div>
+    <div><div class="summary-count" id="cnt-warning">0</div><div class="summary-label">即将到期 (3-5天)</div></div>
   </div>
   <div class="summary-item" onclick="filterByStatus('ok', this)">
     <div class="summary-dot" style="background:#2ecc71"></div>
-    <div>
-      <div class="summary-count" id="cnt-ok">0</div>
-      <div class="summary-label">正常进行中</div>
-    </div>
+    <div><div class="summary-count" id="cnt-ok">0</div><div class="summary-label">正常进行中</div></div>
   </div>
 </div>
 
-<!-- TOOLBAR -->
 <div class="toolbar">
   <div class="search-box">
     <span>🔍</span>
     <input id="searchInput" type="text" placeholder="搜索客户、柜号、航次…" oninput="renderTable()">
   </div>
-  <select class="filter-select" id="portFilter" onchange="renderTable()">
-    <option value="">目的港 (全部)</option>
-  </select>
-  <select class="filter-select" id="docFilter" onchange="renderTable()">
-    <option value="">文件状态</option>
-    <option value="incomplete">有未完成文件</option>
-    <option value="complete">文件全部完成</option>
+  <select class="filter-select" id="portFilter" onchange="renderTable()"><option value="">目的港 (全部)</option></select>
+  <select class="filter-select" id="stageFilter" onchange="renderTable()">
+    <option value="">进度阶段 (全部)</option>
+    <option value="0">订舱</option>
+    <option value="1">报关</option>
+    <option value="2">截关</option>
+    <option value="3">开船</option>
+    <option value="4">到港</option>
+    <option value="5">放货</option>
   </select>
   <div class="today-badge" id="todayBadge"></div>
 </div>
 
-<!-- LEGEND -->
 <div class="legend">
   <div class="legend-item"><div class="legend-dot" style="background:#e84545"></div> 紧急 ≤2天</div>
   <div class="legend-item"><div class="legend-dot" style="background:#f5813a"></div> 警告 3-5天</div>
@@ -571,29 +213,19 @@
   <div class="legend-item"><div class="legend-dot" style="background:#7a8099"></div> 正常 >10天</div>
 </div>
 
-<!-- TABLE -->
 <div class="table-wrap">
   <table id="mainTable">
     <thead>
       <tr>
-        <th onclick="sortBy('client')">客户 <span class="sort-arrow">↕</span></th>
-        <th onclick="sortBy('containerNum')">柜号/柜型 <span class="sort-arrow">↕</span></th>
-        <th onclick="sortBy('route')">航线 <span class="sort-arrow">↕</span></th>
-        <th onclick="sortBy('vessel')">船名航次 <span class="sort-arrow">↕</span></th>
-        <th onclick="sortBy('cutoff')">截关日 <span class="sort-arrow">↕</span></th>
-        <th onclick="sortBy('etd')">开船/ETD <span class="sort-arrow">↕</span></th>
-        <th onclick="sortBy('eta')">到港/ETA <span class="sort-arrow">↕</span></th>
-        <th onclick="sortBy('delivery')">放货日 <span class="sort-arrow">↕</span></th>
-        <th>文件状态</th>
-        <th>操作</th>
+        <th>客户</th><th>柜号/柜型</th><th>航线</th><th>船名航次</th>
+        <th>截关日</th><th>开船/ETD</th><th>到港/ETA</th><th>放货日</th>
+        <th>进度</th><th>操作</th>
       </tr>
     </thead>
     <tbody id="tableBody"></tbody>
   </table>
   <div id="emptyState" class="empty-state" style="display:none">
-    <div class="icon">📦</div>
-    <h3>暂无票单</h3>
-    <p>点击右上角「新增票单」开始追踪</p>
+    <div class="icon">📦</div><h3>暂无票单</h3><p>点击右上角「新增票单」开始追踪</p>
   </div>
 </div>
 
@@ -606,64 +238,44 @@
     </div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">客户名称 *</label>
-          <input class="form-input" id="f-client" placeholder="客户名称">
-        </div>
-        <div class="form-group">
-          <label class="form-label">柜号</label>
-          <input class="form-input" id="f-containerNum" placeholder="ABCU1234567">
-        </div>
-        <div class="form-group">
-          <label class="form-label">柜型</label>
+        <div class="form-group"><label class="form-label">客户名称 *</label><input class="form-input" id="f-client" placeholder="客户名称"></div>
+        <div class="form-group"><label class="form-label">柜号</label><input class="form-input" id="f-containerNum" placeholder="ABCU1234567"></div>
+        <div class="form-group"><label class="form-label">柜型</label>
           <select class="form-select" id="f-containerType">
-            <option value="">请选择</option>
-            <option>20GP</option><option>40GP</option><option>40HQ</option>
-            <option>20RF</option><option>40RF</option><option>45HQ</option>
-            <option>LCL 拼箱</option><option>其他</option>
+            <option value="">请选择</option><option>20GP</option><option>40GP</option><option>40HQ</option>
+            <option>20RF</option><option>40RF</option><option>45HQ</option><option>LCL 拼箱</option><option>其他</option>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">船名/航次</label>
-          <input class="form-input" id="f-vessel" placeholder="例：MSC AURORA / V.123">
-        </div>
-        <div class="form-group">
-          <label class="form-label">起运港</label>
-          <input class="form-input" id="f-pol" placeholder="例：CNSHA 上海">
-        </div>
-        <div class="form-group">
-          <label class="form-label">目的港</label>
-          <input class="form-input" id="f-pod" placeholder="例：USLAX 洛杉矶">
-        </div>
+        <div class="form-group"><label class="form-label">船名/航次</label><input class="form-input" id="f-vessel" placeholder="例：MSC AURORA / V.123"></div>
+        <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="f-pol" placeholder="例：CNSHA 上海"></div>
+        <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="f-pod" placeholder="例：USLAX 洛杉矶"></div>
+        <div class="form-group"><label class="form-label">联系人</label><input class="form-input" id="f-contactName" placeholder="客户联系人姓名"></div>
+        <div class="form-group"><label class="form-label">联系电话</label><input class="form-input" id="f-contactPhone" placeholder="手机号"></div>
       </div>
 
       <div class="section-title">📅 关键时间节点</div>
       <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">截关日</label>
-          <input class="form-input" id="f-cutoff" type="date">
-        </div>
-        <div class="form-group">
-          <label class="form-label">开船日 / ETD</label>
-          <input class="form-input" id="f-etd" type="date">
-        </div>
-        <div class="form-group">
-          <label class="form-label">到港日 / ETA</label>
-          <input class="form-input" id="f-eta" type="date">
-        </div>
-        <div class="form-group">
-          <label class="form-label">放货 / 提货日</label>
-          <input class="form-input" id="f-delivery" type="date">
-        </div>
+        <div class="form-group"><label class="form-label">截关日</label><input class="form-input" id="f-cutoff" type="date"></div>
+        <div class="form-group"><label class="form-label">开船日 / ETD</label><input class="form-input" id="f-etd" type="date"></div>
+        <div class="form-group"><label class="form-label">到港日 / ETA</label><input class="form-input" id="f-eta" type="date"></div>
+        <div class="form-group"><label class="form-label">放货 / 提货日</label><input class="form-input" id="f-delivery" type="date"></div>
       </div>
+
+      <div class="section-title">📦 当前进度阶段</div>
+      <select class="form-select" id="f-stage">
+        <option value="0">① 订舱</option>
+        <option value="1">② 报关</option>
+        <option value="2">③ 截关</option>
+        <option value="3">④ 开船</option>
+        <option value="4">⑤ 到港</option>
+        <option value="5">⑥ 放货</option>
+      </select>
 
       <div class="section-title">📄 单据状态</div>
-      <div class="doc-grid" id="docChecks">
-        <!-- generated by JS -->
-      </div>
+      <div class="doc-grid" id="docChecks"></div>
 
       <div class="section-title">📝 备注</div>
-      <textarea class="form-input notes-textarea" id="f-notes" placeholder="其他备注、特殊要求…"></textarea>
+      <textarea class="form-input notes-textarea" id="f-notes" placeholder="其他备注、特殊要求…" style="resize:vertical;min-height:70px"></textarea>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('formModal')">取消</button>
@@ -683,63 +295,69 @@
     <div class="modal-footer">
       <button class="btn-danger" id="detailDeleteBtn">删除</button>
       <button class="btn-secondary" onclick="closeModal('detailModal')">关闭</button>
+      <button class="btn-notify" id="detailNotifyBtn">📱 通知客户</button>
       <button class="btn-primary" id="detailEditBtn">编辑</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
+<!-- NOTIFY MODAL -->
+<div class="modal-overlay" id="notifyModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2>选择通知模板</h2>
+      <button class="modal-close" onclick="closeModal('notifyModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="tpl-grid" id="tplGrid"></div>
+      <div class="tpl-preview" id="tplPreview" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('notifyModal')">关闭</button>
+      <button class="btn-primary" id="tplCopyBtn" style="display:none" onclick="copyTpl()">📋 复制短信</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── DATA ───────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'shipment_tracker_v2';
+const STORAGE_KEY = 'shipment_tracker_v3';
 const DOC_TYPES = ['提单(BL)', '报关单', '发票(INV)', '装箱单(PL)', '放货通知', '到货通知'];
+const STAGES = ['订舱', '报关', '截关', '开船', '到港', '放货'];
+const STAGE_ICONS = ['📋', '📑', '⏰', '🚢', '⚓', '📦'];
 
 let shipments = [];
 let editingId = null;
 let currentFilter = 'all';
-let currentSort = { key: 'cutoff', dir: 1 };
+let currentNotifyShipment = null;
+let currentTplText = '';
 
 function load() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    shipments = raw ? JSON.parse(raw) : [];
-  } catch(e) {
-    shipments = [];
-  }
+  try { const raw = localStorage.getItem(STORAGE_KEY); shipments = raw ? JSON.parse(raw) : []; } catch(e) { shipments = []; }
   if (!shipments.length) shipments = sampleData();
   save();
 }
-function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(shipments)); } catch(e) {}
-}
+function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(shipments)); } catch(e) {} }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
 function sampleData() {
   const today = new Date();
-  const d = (offset) => {
-    const dd = new Date(today);
-    dd.setDate(dd.getDate() + offset);
-    return dd.toISOString().slice(0, 10);
-  };
+  const d = (offset) => { const dd = new Date(today); dd.setDate(dd.getDate() + offset); return dd.toISOString().slice(0, 10); };
   return [
-    { id: uid(), client: '台湾ABC公司', containerNum: 'MSCU2341567', containerType: '40HQ', vessel: 'MSC AURORA / V.112W', pol: 'CNSHA 上海', pod: 'USLAX 洛杉矶', cutoff: d(1), etd: d(3), eta: d(18), delivery: d(20), docs: { '提单(BL)': false, '报关单': true, '发票(INV)': true, '装箱单(PL)': true, '放货通知': false, '到货通知': false }, notes: '客户要求提前48小时通知放货' },
-    { id: uid(), client: '深圳XYZ贸易', containerNum: 'HLXU4481233', containerType: '20GP', vessel: 'HAPAG KAIRO / V.037E', pol: 'CNSZX 深圳', pod: 'DEHAM 汉堡', cutoff: d(-1), etd: d(2), eta: d(26), delivery: d(28), docs: { '提单(BL)': true, '报关单': true, '发票(INV)': true, '装箱单(PL)': true, '放货通知': false, '到货通知': false }, notes: '' },
-    { id: uid(), client: '东方国际物流', containerNum: 'OOLU9921045', containerType: '40HQ', vessel: 'COSCO SHIPPING / V.089N', pol: 'CNNGB 宁波', pod: 'NLRTM 鹿特丹', cutoff: d(5), etd: d(8), eta: d(32), delivery: d(35), docs: { '提单(BL)': false, '报关单': false, '发票(INV)': false, '装箱单(PL)': false, '放货通知': false, '到货通知': false }, notes: '拼箱货，等待尾程安排' },
-    { id: uid(), client: '美达进出口', containerNum: 'YMLU7763001', containerType: '40GP', vessel: 'YM UNIFORMITY / V.214S', pol: 'CNSHA 上海', pod: 'JPOSA 大阪', cutoff: d(12), etd: d(15), eta: d(19), delivery: d(21), docs: { '提单(BL)': false, '报关单': false, '发票(INV)': true, '装箱单(PL)': true, '放货通知': false, '到货通知': false }, notes: '' },
+    { id: uid(), client: '台湾ABC公司', contactName: '陈先生', contactPhone: '139****1234', containerNum: 'MSCU2341567', containerType: '40HQ', vessel: 'MSC AURORA / V.112W', pol: 'CNSHA 上海', pod: 'USLAX 洛杉矶', cutoff: d(1), etd: d(3), eta: d(18), delivery: d(20), stage: 2, docs: { '提单(BL)': false, '报关单': true, '发票(INV)': true, '装箱单(PL)': true, '放货通知': false, '到货通知': false }, notes: '客户要求提前48小时通知放货' },
+    { id: uid(), client: '深圳XYZ贸易', contactName: '王小姐', contactPhone: '186****5678', containerNum: 'HLXU4481233', containerType: '20GP', vessel: 'HAPAG KAIRO / V.037E', pol: 'CNSZX 深圳', pod: 'DEHAM 汉堡', cutoff: d(-1), etd: d(2), eta: d(26), delivery: d(28), stage: 3, docs: { '提单(BL)': true, '报关单': true, '发票(INV)': true, '装箱单(PL)': true, '放货通知': false, '到货通知': false }, notes: '' },
+    { id: uid(), client: '东方国际物流', contactName: '李经理', contactPhone: '', containerNum: 'OOLU9921045', containerType: '40HQ', vessel: 'COSCO SHIPPING / V.089N', pol: 'CNNGB 宁波', pod: 'NLRTM 鹿特丹', cutoff: d(5), etd: d(8), eta: d(32), delivery: d(35), stage: 0, docs: { '提单(BL)': false, '报关单': false, '发票(INV)': false, '装箱单(PL)': false, '放货通知': false, '到货通知': false }, notes: '拼箱货，等待尾程安排' },
+    { id: uid(), client: '美达进出口', contactName: '', contactPhone: '', containerNum: 'YMLU7763001', containerType: '40GP', vessel: 'YM UNIFORMITY / V.214S', pol: 'CNSHA 上海', pod: 'JPOSA 大阪', cutoff: d(12), etd: d(15), eta: d(19), delivery: d(21), stage: 1, docs: { '提单(BL)': false, '报关单': false, '发票(INV)': true, '装箱单(PL)': true, '放货通知': false, '到货通知': false }, notes: '' },
   ];
 }
 
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
-
-// ─── URGENCY ─────────────────────────────────────────────────────────────────
 function daysDiff(dateStr) {
   if (!dateStr) return null;
   const today = new Date(); today.setHours(0,0,0,0);
   const d = new Date(dateStr); d.setHours(0,0,0,0);
   return Math.round((d - today) / 86400000);
 }
-
 function urgencyClass(dateStr) {
   const d = daysDiff(dateStr);
   if (d === null) return 'date-none';
@@ -749,7 +367,6 @@ function urgencyClass(dateStr) {
   if (d <= 10) return 'date-soon';
   return 'date-ok';
 }
-
 function formatDate(dateStr) {
   if (!dateStr) return '<span class="date-none">—</span>';
   const d = daysDiff(dateStr);
@@ -764,7 +381,6 @@ function formatDate(dateStr) {
   else if (d !== null) suffix = ` (+${d}天)`;
   return `<span class="date-cell ${cls}">${label}${suffix}</span>`;
 }
-
 function shipmentUrgency(s) {
   const dates = [s.cutoff, s.etd, s.eta, s.delivery].filter(Boolean);
   const min = dates.map(daysDiff).filter(d => d !== null && d >= 0);
@@ -772,82 +388,52 @@ function shipmentUrgency(s) {
   return Math.min(...min);
 }
 
-// ─── RENDER ───────────────────────────────────────────────────────────────────
 function renderTable() {
   const search = document.getElementById('searchInput').value.toLowerCase();
   const portF = document.getElementById('portFilter').value;
-  const docF = document.getElementById('docFilter').value;
+  const stageF = document.getElementById('stageFilter').value;
 
   let list = shipments.filter(s => {
     const text = [s.client, s.containerNum, s.vessel, s.pol, s.pod].join(' ').toLowerCase();
     if (search && !text.includes(search)) return false;
     if (portF && s.pod !== portF) return false;
-    if (docF === 'incomplete') { const vals = Object.values(s.docs||{}); if (vals.every(v=>v)) return false; }
-    if (docF === 'complete') { const vals = Object.values(s.docs||{}); if (!vals.every(v=>v)) return false; }
+    if (stageF !== '' && String(s.stage) !== stageF) return false;
     if (currentFilter === 'urgent') { const u = shipmentUrgency(s); if (u > 2) return false; }
     if (currentFilter === 'warning') { const u = shipmentUrgency(s); if (u < 3 || u > 5) return false; }
     if (currentFilter === 'ok') { const u = shipmentUrgency(s); if (u <= 5) return false; }
     return true;
   });
 
-  list.sort((a, b) => {
-    let va = a[currentSort.key] || '', vb = b[currentSort.key] || '';
-    if (!va) return 1; if (!vb) return -1;
-    return va < vb ? -currentSort.dir : va > vb ? currentSort.dir : 0;
-  });
+  list.sort((a, b) => shipmentUrgency(a) - shipmentUrgency(b));
 
   const tbody = document.getElementById('tableBody');
-  if (!list.length) {
-    tbody.innerHTML = '';
-    document.getElementById('emptyState').style.display = 'block';
-  } else {
-    document.getElementById('emptyState').style.display = 'none';
-  }
+  document.getElementById('emptyState').style.display = list.length ? 'none' : 'block';
 
   tbody.innerHTML = list.map(s => {
-    const docs = s.docs || {};
-    const doneCount = Object.values(docs).filter(v=>v).length;
-    const total = DOC_TYPES.length;
-    const pct = Math.round(doneCount / total * 100);
     const urg = shipmentUrgency(s);
     let rowStyle = '';
     if (urg <= 2) rowStyle = 'border-left: 3px solid var(--red);';
     else if (urg <= 5) rowStyle = 'border-left: 3px solid var(--orange);';
 
-    const badges = DOC_TYPES.map(dt => {
-      const done = docs[dt];
-      const isUrgDate = urg <= 2 && !done;
-      const cls = done ? 's-done' : (isUrgDate ? 's-urgent' : 's-todo');
-      return `<span class="status-badge ${cls}">${done ? '✓ ' : ''}${dt}</span>`;
-    }).join('');
+    const stage = s.stage || 0;
+    const miniTrack = STAGES.map((_, i) =>
+      `<div class="mini-step ${i < stage ? 'done' : i === stage ? 'current' : ''}"></div>`
+    ).join('');
 
     return `<tr style="${rowStyle}" onclick="openDetail('${s.id}')">
-      <td><div class="td-main">${s.client}</div></td>
-      <td>
-        <div><span class="container-num">${s.containerNum||'—'}</span></div>
-        <div class="td-sub" style="margin-top:4px">${s.containerType||'—'}</div>
-      </td>
-      <td>
-        <div class="route">
-          <span>${s.pol ? s.pol.slice(0,5) : '—'}</span>
-          <span class="route-arrow">→</span>
-          <span>${s.pod ? s.pod.slice(0,5) : '—'}</span>
-        </div>
-      </td>
+      <td><div class="td-main">${s.client}</div>${s.contactName?`<div class="td-sub">${s.contactName}</div>`:''}</td>
+      <td><div><span class="container-num">${s.containerNum||'—'}</span></div><div class="td-sub" style="margin-top:4px">${s.containerType||'—'}</div></td>
+      <td><div class="route"><span>${s.pol ? s.pol.slice(0,5) : '—'}</span><span class="route-arrow">→</span><span>${s.pod ? s.pod.slice(0,5) : '—'}</span></div></td>
       <td><div class="td-main" style="font-size:12px;max-width:130px">${s.vessel||'—'}</div></td>
       <td>${formatDate(s.cutoff)}</td>
       <td>${formatDate(s.etd)}</td>
       <td>${formatDate(s.eta)}</td>
       <td>${formatDate(s.delivery)}</td>
       <td>
-        <div class="progress-bar-bg" style="margin-bottom:5px">
-          <div class="progress-bar-fg" style="width:${pct}%"></div>
-        </div>
-        <div class="status-wrap">${badges}</div>
+        <div class="mini-track">${miniTrack}</div>
+        <div class="td-sub" style="margin-top:4px">${STAGE_ICONS[stage]} ${STAGES[stage]}</div>
       </td>
-      <td onclick="event.stopPropagation()">
-        <button class="action-btn" onclick="openEdit('${s.id}')">编辑</button>
-      </td>
+      <td onclick="event.stopPropagation()"><button class="action-btn" onclick="openEdit('${s.id}')">编辑</button></td>
     </tr>`;
   }).join('');
 
@@ -861,14 +447,12 @@ function updateSummary() {
   document.getElementById('cnt-warning').textContent = shipments.filter(s => { const u = shipmentUrgency(s); return u > 2 && u <= 5; }).length;
   document.getElementById('cnt-ok').textContent = shipments.filter(s => shipmentUrgency(s) > 5).length;
 }
-
 function updatePortFilter() {
   const sel = document.getElementById('portFilter');
   const current = sel.value;
   const ports = [...new Set(shipments.map(s => s.pod).filter(Boolean))].sort();
   sel.innerHTML = '<option value="">目的港 (全部)</option>' + ports.map(p => `<option ${p===current?'selected':''}>${p}</option>`).join('');
 }
-
 function filterByStatus(status, el) {
   currentFilter = status;
   document.querySelectorAll('.summary-item').forEach(e => e.classList.remove('active'));
@@ -876,55 +460,42 @@ function filterByStatus(status, el) {
   renderTable();
 }
 
-function sortBy(key) {
-  if (currentSort.key === key) currentSort.dir *= -1;
-  else { currentSort.key = key; currentSort.dir = 1; }
-  document.querySelectorAll('th').forEach(th => th.classList.remove('sorted'));
-  event.currentTarget.classList.add('sorted');
-  renderTable();
-}
-
-// ─── MODAL ───────────────────────────────────────────────────────────────────
 function buildDocChecks(docs) {
   const el = document.getElementById('docChecks');
   el.innerHTML = DOC_TYPES.map(dt => {
     const checked = docs && docs[dt];
-    return `<label class="doc-check ${checked ? 'checked' : ''}" id="dclabel-${dt.replace(/[^a-z]/gi,'_')}">
+    return `<label class="doc-check ${checked ? 'checked' : ''}">
       <input type="checkbox" ${checked ? 'checked' : ''} data-doc="${dt}" onchange="toggleDocCheck(this)"> ${dt}
     </label>`;
   }).join('');
 }
-
 function toggleDocCheck(el) {
   const lbl = el.closest('label');
   el.checked ? lbl.classList.add('checked') : lbl.classList.remove('checked');
 }
-
 function getDocValues() {
   const out = {};
-  document.querySelectorAll('#docChecks input[type=checkbox]').forEach(cb => {
-    out[cb.dataset.doc] = cb.checked;
-  });
+  document.querySelectorAll('#docChecks input[type=checkbox]').forEach(cb => out[cb.dataset.doc] = cb.checked);
   return out;
 }
 
 function openAddModal() {
   editingId = null;
   document.getElementById('modalTitle').textContent = '新增票单';
-  ['client','containerNum','vessel','pol','pod','cutoff','etd','eta','delivery','notes'].forEach(id => {
-    document.getElementById('f-' + id).value = '';
-  });
+  ['client','contactName','contactPhone','containerNum','vessel','pol','pod','cutoff','etd','eta','delivery','notes'].forEach(id => document.getElementById('f-' + id).value = '');
   document.getElementById('f-containerType').value = '';
+  document.getElementById('f-stage').value = '0';
   buildDocChecks({});
   openModal('formModal');
 }
-
 function openEdit(id) {
   const s = shipments.find(x => x.id === id);
   if (!s) return;
   editingId = id;
   document.getElementById('modalTitle').textContent = '编辑票单';
   document.getElementById('f-client').value = s.client || '';
+  document.getElementById('f-contactName').value = s.contactName || '';
+  document.getElementById('f-contactPhone').value = s.contactPhone || '';
   document.getElementById('f-containerNum').value = s.containerNum || '';
   document.getElementById('f-containerType').value = s.containerType || '';
   document.getElementById('f-vessel').value = s.vessel || '';
@@ -934,18 +505,19 @@ function openEdit(id) {
   document.getElementById('f-etd').value = s.etd || '';
   document.getElementById('f-eta').value = s.eta || '';
   document.getElementById('f-delivery').value = s.delivery || '';
+  document.getElementById('f-stage').value = s.stage || 0;
   document.getElementById('f-notes').value = s.notes || '';
   buildDocChecks(s.docs || {});
   closeModal('detailModal');
   openModal('formModal');
 }
-
 function saveShipment() {
   const client = document.getElementById('f-client').value.trim();
   if (!client) { showToast('请填写客户名称', 'error'); return; }
   const s = {
-    id: editingId || uid(),
-    client,
+    id: editingId || uid(), client,
+    contactName: document.getElementById('f-contactName').value.trim(),
+    contactPhone: document.getElementById('f-contactPhone').value.trim(),
     containerNum: document.getElementById('f-containerNum').value.trim(),
     containerType: document.getElementById('f-containerType').value,
     vessel: document.getElementById('f-vessel').value.trim(),
@@ -955,20 +527,28 @@ function saveShipment() {
     etd: document.getElementById('f-etd').value,
     eta: document.getElementById('f-eta').value,
     delivery: document.getElementById('f-delivery').value,
+    stage: parseInt(document.getElementById('f-stage').value) || 0,
     docs: getDocValues(),
     notes: document.getElementById('f-notes').value.trim(),
   };
   if (editingId) {
-    const idx = shipments.findIndex(x => x.id === editingId);
-    shipments[idx] = s;
+    shipments[shipments.findIndex(x => x.id === editingId)] = s;
     showToast('票单已更新 ✓', 'success');
   } else {
     shipments.unshift(s);
     showToast('票单已新增 ✓', 'success');
   }
+  save(); closeModal('formModal'); renderTable();
+}
+
+function setStage(id, stage) {
+  const s = shipments.find(x => x.id === id);
+  if (!s) return;
+  s.stage = stage;
   save();
-  closeModal('formModal');
+  openDetail(id);
   renderTable();
+  showToast(`已更新进度：${STAGES[stage]} ✓`, 'success');
 }
 
 function openDetail(id) {
@@ -977,72 +557,126 @@ function openDetail(id) {
   document.getElementById('detailTitle').textContent = `${s.client} — ${s.containerNum || '未填柜号'}`;
   const urg = shipmentUrgency(s);
   let urgLabel = '';
-  if (urg <= 2) urgLabel = '<span class="status-badge s-urgent" style="margin-left:8px">⚠ 紧急</span>';
-  else if (urg <= 5) urgLabel = '<span class="status-badge" style="margin-left:8px;background:var(--orange-bg);color:var(--orange);border:1px solid rgba(245,129,58,.3)">注意</span>';
+  if (urg <= 2) urgLabel = '<span style="background:var(--red-bg);color:var(--red);border:1px solid rgba(232,69,69,.3);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:8px">⚠ 紧急</span>';
+  else if (urg <= 5) urgLabel = '<span style="background:var(--orange-bg);color:var(--orange);border:1px solid rgba(245,129,58,.3);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:8px">注意</span>';
+
+  const stage = s.stage || 0;
+  const timeline = STAGES.map((label, i) => {
+    const cls = i < stage ? 'done' : i === stage ? 'current' : '';
+    const lineCls = i <= stage ? 'done' : '';
+    return `<div class="timeline-step ${cls}" onclick="setStage('${s.id}', ${i})">
+      <div class="timeline-line ${lineCls}"></div>
+      <div class="timeline-dot">${i < stage ? '✓' : STAGE_ICONS[i]}</div>
+      <div class="timeline-label">${label}</div>
+    </div>`;
+  }).join('');
 
   const docs = s.docs || {};
   const docBadges = DOC_TYPES.map(dt => {
     const done = docs[dt];
-    return `<span class="status-badge ${done ? 's-done' : 's-todo'}">${done ? '✓ ' : '✗ '}${dt}</span>`;
+    return `<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em;${done?'background:var(--green-bg);color:var(--green);border:1px solid rgba(46,204,113,.3)':'background:var(--surface2);color:var(--text-dim);border:1px solid var(--border)'}">${done ? '✓ ' : '✗ '}${dt}</span>`;
   }).join(' ');
 
   document.getElementById('detailBody').innerHTML = `
-    <div class="detail-section">
-      ${urgLabel}
-      <div class="detail-row"><div class="detail-label">客户</div><div class="detail-val">${s.client}</div></div>
-      <div class="detail-row"><div class="detail-label">柜号/柜型</div><div class="detail-val"><span class="container-num">${s.containerNum||'—'}</span> ${s.containerType||''}</div></div>
-      <div class="detail-row"><div class="detail-label">船名/航次</div><div class="detail-val">${s.vessel||'—'}</div></div>
-      <div class="detail-row"><div class="detail-label">航线</div><div class="detail-val">${s.pol||'—'} → ${s.pod||'—'}</div></div>
-    </div>
+    <div class="section-title" style="margin-top:0">📍 当前进度 ${urgLabel}</div>
+    <div class="timeline">${timeline}</div>
+
+    <div class="detail-row"><div class="detail-label">客户</div><div class="detail-val">${s.client}${s.contactName?` · ${s.contactName}`:''}${s.contactPhone?` · 📞${s.contactPhone}`:''}</div></div>
+    <div class="detail-row"><div class="detail-label">柜号/柜型</div><div class="detail-val"><span class="container-num">${s.containerNum||'—'}</span> ${s.containerType||''}</div></div>
+    <div class="detail-row"><div class="detail-label">船名/航次</div><div class="detail-val">${s.vessel||'—'}</div></div>
+    <div class="detail-row"><div class="detail-label">航线</div><div class="detail-val">${s.pol||'—'} → ${s.pod||'—'}</div></div>
+
     <div class="section-title">📅 时间节点</div>
-    <div class="detail-section">
-      <div class="detail-row"><div class="detail-label">截关日</div><div class="detail-val">${formatDate(s.cutoff)}</div></div>
-      <div class="detail-row"><div class="detail-label">开船/ETD</div><div class="detail-val">${formatDate(s.etd)}</div></div>
-      <div class="detail-row"><div class="detail-label">到港/ETA</div><div class="detail-val">${formatDate(s.eta)}</div></div>
-      <div class="detail-row"><div class="detail-label">放货日</div><div class="detail-val">${formatDate(s.delivery)}</div></div>
-    </div>
+    <div class="detail-row"><div class="detail-label">截关日</div><div class="detail-val">${formatDate(s.cutoff)}</div></div>
+    <div class="detail-row"><div class="detail-label">开船/ETD</div><div class="detail-val">${formatDate(s.etd)}</div></div>
+    <div class="detail-row"><div class="detail-label">到港/ETA</div><div class="detail-val">${formatDate(s.eta)}</div></div>
+    <div class="detail-row"><div class="detail-label">放货日</div><div class="detail-val">${formatDate(s.delivery)}</div></div>
+
     <div class="section-title">📄 单据状态</div>
-    <div class="status-wrap" style="gap:6px;margin-bottom:14px">${docBadges}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">${docBadges}</div>
     ${s.notes ? `<div class="section-title">📝 备注</div><div style="font-size:13px;color:var(--text-mid);line-height:1.6;padding:10px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)">${s.notes}</div>` : ''}
   `;
   document.getElementById('detailEditBtn').onclick = () => openEdit(id);
   document.getElementById('detailDeleteBtn').onclick = () => deleteShipment(id);
+  document.getElementById('detailNotifyBtn').onclick = () => openNotify(id);
   openModal('detailModal');
 }
 
 function deleteShipment(id) {
   if (!confirm('确定删除这票单据？')) return;
   shipments = shipments.filter(x => x.id !== id);
-  save();
-  closeModal('detailModal');
-  renderTable();
+  save(); closeModal('detailModal'); renderTable();
   showToast('已删除', 'success');
+}
+
+// ── NOTIFICATION TEMPLATES ──
+const TEMPLATES = [
+  { key: 'cutoff', icon: '⏰', label: '催交单据', stages: 'all',
+    gen: s => `${s.client}您好，贵司货柜（${s.containerNum||'柜号待定'}）截关日为${fmtCN(s.cutoff)}，请尽快提供所需单据资料，以免耽误装船。谢谢配合！` },
+  { key: 'booking', icon: '📋', label: '订舱确认', stages: 'all',
+    gen: s => `${s.client}您好，已为贵司安排${s.pol||'起运港'}-${s.pod||'目的港'}航线订舱，船名航次：${s.vessel||'待定'}，预计开船日${fmtCN(s.etd)}，到港日${fmtCN(s.eta)}。如有疑问请随时联系。` },
+  { key: 'departed', icon: '🚢', label: '开船通知', stages: 'all',
+    gen: s => `${s.client}您好，贵司货柜（${s.containerNum||''}）已于${fmtCN(s.etd)}顺利开船，船名航次：${s.vessel||''}，预计${fmtCN(s.eta)}到达${s.pod||'目的港'}，请留意后续到港信息。` },
+  { key: 'arriving', icon: '⚓', label: '到港提醒', stages: 'all',
+    gen: s => `${s.client}您好，贵司货柜（${s.containerNum||''}）预计${fmtCN(s.eta)}到达${s.pod||'目的港'}，请提前安排好提货事宜，到港后我们会第一时间通知。` },
+  { key: 'release', icon: '📦', label: '放货通知', stages: 'all',
+    gen: s => `${s.client}您好，贵司货柜（${s.containerNum||''}）已可安排放货提柜，请尽快办理相关手续。如需协助请联系我们。` },
+  { key: 'docpending', icon: '📑', label: '单据缺失提醒', stages: 'all',
+    gen: s => { const missing = Object.entries(s.docs||{}).filter(([k,v])=>!v).map(([k])=>k); return `${s.client}您好，贵司货柜（${s.containerNum||''}）目前还缺少以下单据：${missing.length?missing.join('、'):'（暂无缺失）'}，请尽快补齐，谢谢配合！`; } },
+];
+
+function fmtCN(dateStr) {
+  if (!dateStr) return '待定';
+  const [y,m,d] = dateStr.split('-');
+  return `${y}年${parseInt(m)}月${parseInt(d)}日`;
+}
+
+function openNotify(id) {
+  const s = shipments.find(x => x.id === id);
+  if (!s) return;
+  currentNotifyShipment = s;
+  document.getElementById('tplPreview').style.display = 'none';
+  document.getElementById('tplCopyBtn').style.display = 'none';
+  document.getElementById('tplGrid').innerHTML = TEMPLATES.map(t =>
+    `<button class="tpl-btn" onclick="selectTpl('${t.key}')"><span class="tpl-icon">${t.icon}</span>${t.label}</button>`
+  ).join('');
+  closeModal('detailModal');
+  openModal('notifyModal');
+}
+function selectTpl(key) {
+  const t = TEMPLATES.find(x => x.key === key);
+  if (!t || !currentNotifyShipment) return;
+  currentTplText = t.gen(currentNotifyShipment);
+  const pv = document.getElementById('tplPreview');
+  pv.textContent = currentTplText;
+  pv.style.display = 'block';
+  document.getElementById('tplCopyBtn').style.display = 'inline-block';
+}
+function copyTpl() {
+  navigator.clipboard.writeText(currentTplText).then(() => {
+    showToast('短信已复制，可直接粘贴发送 ✓', 'success');
+  }).catch(() => {
+    prompt('请手动复制以下内容：', currentTplText);
+  });
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); }));
 
-document.querySelectorAll('.modal-overlay').forEach(el => {
-  el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
-});
-
-// ─── TOAST ───────────────────────────────────────────────────────────────────
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 2200);
+  setTimeout(() => t.classList.remove('show'), 2400);
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
 function init() {
   const today = new Date();
-  document.getElementById('todayBadge').textContent = 
-    today.toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+  document.getElementById('todayBadge').textContent = today.toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
   load();
   renderTable();
 }
-
 init();
 </script>
 </body>
